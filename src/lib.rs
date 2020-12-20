@@ -176,6 +176,12 @@ pub struct Light {
     device_id: DeviceId,
 }
 
+impl Light {
+    pub fn id(&self) -> &str {
+        &self.device_id.0
+    }
+}
+
 pub struct AccessToken(String);
 
 impl AccessToken {
