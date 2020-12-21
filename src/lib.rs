@@ -467,8 +467,9 @@ pub enum State {
     Off,
 }
 
+#[derive(Debug)]
 pub struct HsbColor {
-    pub brightness: u16,
-    pub saturation: u16,
+    pub brightness: u8,
+    pub saturation: u8,
     pub hue: u16,
 }
