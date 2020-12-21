@@ -210,7 +210,7 @@ enum TuyaCommand {
     },
     SetBrightness {
         device_id: DeviceId,
-        brightness: u16,
+        brightness: u8,
     },
     QueryDevice {
         device_id: DeviceId,
@@ -218,6 +218,10 @@ enum TuyaCommand {
     SetColor {
         device_id: DeviceId,
         color: HsbColor,
+    },
+    SetColorTemperature {
+        device_id: DeviceId,
+        temperature: u32,
     },
 }
 
@@ -268,7 +272,7 @@ impl Serialize for TuyaRequest {
                 "control",
                 "brightnessSet",
                 Some(device_id.clone()),
-                Some(("value".to_owned(), brightness.to_string().into())),
+                Some(("value".to_owned(), (*brightness).into())),
             ),
             TuyaCommand::QueryDevice { device_id } => {
                 ("query", "QueryDevice", Some(device_id.clone()), None)
@@ -289,6 +293,15 @@ impl Serialize for TuyaRequest {
                         .collect(),
                     ),
                 )),
+            ),
+            TuyaCommand::SetColorTemperature {
+                device_id,
+                temperature,
+            } => (
+                "control",
+                "colorTemperatureSet",
+                Some(device_id.clone()),
+                Some(("value".to_owned(), (*temperature).into())),
             ),
         };
         RawRequest {
@@ -407,10 +420,10 @@ impl TuyaApi {
         })
         .await
     }
-    pub async fn set_brightness(&self, light: &Light, brightness: u16) -> Result<(), Error> {
+    pub async fn set_brightness(&self, light: &Light, brightness: u8) -> Result<(), Error> {
         self.send_state_command(TuyaCommand::SetBrightness {
             device_id: light.device_id.clone(),
-            brightness,
+            brightness: ((brightness as f64 / 255.) * 100.) as u8,
         })
         .await
     }
@@ -418,6 +431,17 @@ impl TuyaApi {
         self.send_state_command(TuyaCommand::SetColor {
             device_id: light.device_id.clone(),
             color,
+        })
+        .await
+    }
+    pub async fn set_color_temperature(
+        &self,
+        light: &Light,
+        temperature: u32,
+    ) -> Result<(), Error> {
+        self.send_state_command(TuyaCommand::SetColorTemperature {
+            device_id: light.device_id.clone(),
+            temperature: (1000. + (((temperature.min(6500) - 2700) as f64) / 3800.) * 9000.) as u32,
         })
         .await
     }
