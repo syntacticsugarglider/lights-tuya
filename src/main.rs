@@ -65,7 +65,7 @@ fn main() {
                     &light,
                     HsbColor {
                         hue: 0,
-                        saturation: 0,
+                        saturation: 0.,
                         brightness: 0,
                     },
                 )
